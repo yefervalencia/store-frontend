@@ -21,7 +21,7 @@
             <td class="fw-semibold text-dark">{{ store.name }}</td>
             <td>{{ store.address }}</td>
             <td class="text-end">
-              <button class="btn btn-sm btn-outline-secondary me-2">Editar</button>
+              <button class="btn btn-sm btn-outline-secondary me-2" [routerLink]="['/stores/edit', store.id]">Editar</button>
               <button class="btn btn-sm btn-outline-danger" (click)="deleteStore(store.id!)">Eliminar</button>
             </td>
           </tr>

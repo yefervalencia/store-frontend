@@ -25,4 +25,7 @@ export class StoreService {
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
+  getById(id: string): Observable<Store> {
+    return this.http.get<Store>(`${this.baseUrl}/${id}`);
+  }
 }

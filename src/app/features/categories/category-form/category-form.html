@@ -1,0 +1,26 @@
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="custom-card p-4 mt-4">
+      <h3 class="text-primary-blue mb-4">
+        @if(currentId()) { Editar Categoría } @else { Nueva Categoría }
+      </h3>
+      
+      <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()">
+        <div class="mb-3">
+          <label class="form-label fw-bold">Nombre</label>
+          <input type="text" class="form-control" formControlName="name" placeholder="Ej: Electrónica">
+        </div>
+        
+        <div class="mb-4">
+          <label class="form-label fw-bold">Descripción</label>
+          <textarea class="form-control" formControlName="description" rows="3" placeholder="Descripción breve..."></textarea>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-light" routerLink="/categories">Cancelar</button>
+          <button type="submit" class="btn btn-primary-custom" [disabled]="categoryForm.invalid">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

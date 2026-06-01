@@ -1,6 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { StoreService } from '../../../core/services/store';
 import { Store } from '../../../core/models/store';
 
@@ -15,6 +15,9 @@ export class StoreForm {
   private fb = inject(FormBuilder);
   private storeService = inject(StoreService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
+  currentId = signal<string | null>(null);
 
   // Formulario tipado con nonNullable (Según Formularios.pdf)
   storeForm = this.fb.group({
@@ -22,13 +25,39 @@ export class StoreForm {
     address: ['', { validators: [Validators.required], nonNullable: true }]
   });
 
+  ngOnInit(): void {
+    // Revisamos si la URL trae un parámetro 'id'
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.currentId.set(id); // Guardamos el ID en el signal
+      // Traemos los datos del backend para llenar el formulario
+      this.storeService.getById(id).subscribe(store => {
+        this.storeForm.patchValue({
+          name: store.name,
+          address: store.address
+        });
+      });
+    }
+  }
+
   onSubmit(): void {
     if (this.storeForm.invalid) return;
 
-    // Le decimos a TypeScript que trate los datos como un objeto Store
-    this.storeService.create(this.storeForm.getRawValue() as Store).subscribe({
-      next: () => this.router.navigate(['/stores']), 
-      error: (err) => alert('Error al guardar la tienda')
-    });
+    const storeData = this.storeForm.getRawValue() as Store;
+    const id = this.currentId();
+
+    if (id) {
+      // Si hay un ID, llamamos al método UPDATE
+      this.storeService.update(id, storeData).subscribe({
+        next: () => this.router.navigate(['/stores']),
+        error: () => alert('Error al actualizar la tienda')
+      });
+    } else {
+      // Si NO hay ID, llamamos al método CREATE
+      this.storeService.create(storeData).subscribe({
+        next: () => this.router.navigate(['/stores']),
+        error: () => alert('Error al guardar la tienda')
+      });
+    }
   }
 }

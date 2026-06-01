@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
-import { forkJoin } from 'rxjs'; // <-- ¡Operador clave!
+import { Router, ActivatedRoute, RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { ProductService } from '../../../core/services/product';
 import { StoreService } from '../../../core/services/store';
 import { CategoryService } from '../../../core/services/category';
@@ -22,10 +22,11 @@ export class ProductForm implements OnInit{
   private storeService = inject(StoreService);
   private categoryService = inject(CategoryService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
-  // Signals para llenar los selects del HTML
   stores = signal<Store[]>([]);
   categories = signal<Category[]>([]);
+  currentId = signal<string | null>(null);
 
   productForm = this.fb.group({
     name: ['', { validators: [Validators.required], nonNullable: true }],
@@ -35,14 +36,24 @@ export class ProductForm implements OnInit{
   });
 
   ngOnInit(): void {
-    // forkJoin ejecuta ambas peticiones en paralelo y espera a que terminen
     forkJoin({
       tiendas: this.storeService.getAll(),
       categorias: this.categoryService.getAll()
-    }).subscribe({
-      next: (resultado) => {
-        this.stores.set(resultado.tiendas);
-        this.categories.set(resultado.categorias);
+    }).subscribe(resultado => {
+      this.stores.set(resultado.tiendas);
+      this.categories.set(resultado.categorias);
+
+      const id = this.route.snapshot.paramMap.get('id');
+      if (id) {
+        this.currentId.set(id);
+        this.productService.getById(id).subscribe(product => {
+          this.productForm.patchValue({
+            name: product.name,
+            price: product.price,
+            storeId: product.storeId,
+            categoryId: product.categoryId
+          });
+        });
       }
     });
   }
@@ -50,10 +61,19 @@ export class ProductForm implements OnInit{
   onSubmit(): void {
     if (this.productForm.invalid) return;
 
-    // Le decimos a TypeScript que trate los datos puros como un objeto Product
-    this.productService.create(this.productForm.getRawValue() as Product).subscribe({
-      next: () => this.router.navigate(['/products']),
-      error: (err) => alert('Error: ' + err.error?.message)
-    });
+    const productData = this.productForm.getRawValue() as Product;
+    const id = this.currentId();
+
+    if (id) {
+      this.productService.update(id, productData).subscribe({
+        next: () => this.router.navigate(['/products']),
+        error: (err) => alert('Error al actualizar')
+      });
+    } else {
+      this.productService.create(productData).subscribe({
+        next: () => this.router.navigate(['/products']),
+        error: (err) => alert('Error al crear')
+      });
+    }
   }
 }

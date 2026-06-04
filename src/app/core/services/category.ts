@@ -10,7 +10,6 @@ export class CategoryService {
   private baseUrl = 'http://localhost:8081/apistore/v1/categories';
   private http = inject(HttpClient);
 
-  // Recibe un texto opcional para el buscador dinámico
   getAll(nameFilter?: string): Observable<Category[]> {
     let params = new HttpParams();
     if (nameFilter) {

@@ -12,8 +12,6 @@ import { Store } from '../../../core/models/store';
 })
 export class StoreList implements OnInit{
   private storeService = inject(StoreService);
-
-  // Signal para almacenar las tiendas (Estado reactivo)
   stores = signal<Store[]>([]);
 
   ngOnInit(): void {
@@ -21,10 +19,9 @@ export class StoreList implements OnInit{
   }
 
   loadStores(): void {
-    // Nos suscribimos al Observable del servicio
     this.storeService.getAll().subscribe({
       next: (data) => {
-        this.stores.set(data); // Actualizamos el Signal con los datos del backend
+        this.stores.set(data);
       },
       error: (err) => {
         console.error('Error al cargar tiendas', err);
@@ -36,7 +33,6 @@ export class StoreList implements OnInit{
     if (confirm('¿Estás seguro de eliminar esta tienda?')) {
       this.storeService.delete(id).subscribe({
         next: () => {
-          // Si se elimina con éxito, recargamos la lista
           this.loadStores();
         },
         error: (err) => alert('Error al eliminar la tienda')

@@ -15,7 +15,6 @@ import { Product } from '../../../core/models/product';
 export class ProductList implements OnInit{
   private productService = inject(ProductService);
 
-  // Signal para almacenar los productos
   products = signal<Product[]>([]);
 
   searchControl = new FormControl('', { nonNullable: true });
@@ -23,9 +22,8 @@ export class ProductList implements OnInit{
   ngOnInit(): void {
     this.loadProducts();
 
-    // LA MAGIA DE RXJS: Escuchamos cada tecla, esperamos 300ms y disparamos la búsqueda
     this.searchControl.valueChanges.pipe(
-      debounceTime(300), // Espera a que el usuario deje de escribir
+      debounceTime(300),
       distinctUntilChanged(),
       switchMap(query => this.productService.getAll(query ? { name: query } : {}))
     ).subscribe({

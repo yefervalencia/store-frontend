@@ -16,8 +16,8 @@ export const routes: Routes = [
   { path: 'categories', component: CategoryList },
 { path: 'categories/new', component: CategoryForm },
 { path: 'categories/edit/:id', component: CategoryForm },
-  // Redirigir la ruta raíz a productos
+
   { path: '', redirectTo: '/products', pathMatch: 'full' },
-  // Cualquier ruta no encontrada va a productos (o podrías crear un componente 404)
+
   { path: '**', redirectTo: '/products' }
 ];
